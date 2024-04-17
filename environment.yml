@@ -13,11 +13,12 @@ dependencies:
   - pytorch>=1.8.1
   - requests
   - sentencepiece=0.1.95
-  - jiwer
+  - jiwer>=3
   - expiringdict
   - diskcache
   - sortedcontainers
   - pip:  # FIXME(sdrobert): Update to conda dep when pydrobert-pytorch and pydrobert-speech release >0.3.0
-    - "git+https://github.com/sdrobert/pydrobert-pytorch.git@scpc"
+    - confidence_intervals
+    - "git+https://github.com/sdrobert/pydrobert-pytorch.git"
     - "git+https://github.com/sdrobert/pydrobert-speech"
 
