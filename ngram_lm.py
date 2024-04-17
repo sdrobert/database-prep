@@ -1018,10 +1018,10 @@ def write_arpa(prob_dicts: ProbDicts, out=sys.stdout):
         out.write("\\{}-grams:\n".format(idx + 1))
         if idx == len(entries_by_order) - 1:
             for entry in entries:
-                out.write("{:f} {}\n".format(entry[1], " ".join(entry[0])))
+                out.write("{:f}\t{}\n".format(entry[1], " ".join(entry[0])))
         else:
             for entry in entries:
-                x = f"{entry[1][0]:f} {' '.join(entry[0])} {entry[1][1]:f}\n"
+                x = f"{entry[1][0]:f}\t{' '.join(entry[0])}\t{entry[1][1]:f}\n"
                 assert isinstance(x, str)
                 out.write(x)
         out.write("\n")

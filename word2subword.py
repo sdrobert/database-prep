@@ -107,7 +107,11 @@ def main(args=None):
         if options.both_raw:
             trans = line
         else:
-            trans, utt = line.strip().rsplit(" ", maxsplit=1)
+            x = line.strip().rsplit(" ", maxsplit=1)
+            if len(x) == 1:
+                trans, utt = "", x[0]
+            else:
+                trans, utt = x
         trans = splitter(trans.strip()).strip()
         options.subword_trn.write(trans)
         options.subword_trn.write(" ")

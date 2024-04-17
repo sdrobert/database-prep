@@ -70,7 +70,11 @@ def main(args=None):
         if options.both_raw:
             trans = line
         else:
-            trans, utt = line.strip().rsplit(" ", maxsplit=1)
+            x = line.strip().rsplit(" ", maxsplit=1)
+            if len(x) == 1:
+                trans, utt = "", x[0]
+            else:
+                trans, utt = x
         trans = (
             trans.replace(" ", "")
             .replace(options.space_char, " ")
