@@ -14,12 +14,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import os
 import sys
 import argparse
 import warnings
 
-from typing import Dict, Sequence, Optional
+from typing import Dict, Optional
 
 import numpy as np
 import jiwer
@@ -27,21 +26,16 @@ import jiwer
 from pydrobert.torch.data import read_trn_iter
 from pydrobert.torch.argcheck import as_nonnegi, as_open01
 
-Samples = Sequence[jiwer.WordOutput]
 MIN_PAD = 10
 
 
-def _bootstrap_metric(samples: Samples, samples2: Optional[Samples] = None) -> float:
-    errors = sum((s.insertions + s.deletions + s.substitutions) for s in samples)
-    lens = sum((s.deletions + s.substitutions + s.hits) for s in samples)
+def _bootstrap_metric(
+    samples: np.ndarray, samples2: Optional[np.ndarray] = None
+) -> float:
+    errors, ref_len = samples.sum(0)
     if samples2 is not None:
-        assert all(
-            (s1.deletions + s1.substitutions + s1.hits)
-            == (s2.deletions + s2.substitutions + s2.hits)
-            for (s1, s2) in zip(samples, samples2)
-        )
-        errors -= sum((s.insertions + s.deletions + s.substitutions) for s in samples2)
-    return errors / lens
+        errors -= samples2[..., 0].sum()
+    return errors / ref_len
 
 
 DOC = """Determine error rates between two or more trn files
@@ -213,7 +207,7 @@ def main(args=None):
     else:
         evaluate_with_conf_int = conditions = None
 
-    hname2samples: Dict[str, Samples] = dict()
+    hname2samples: Dict[str, np.ndarray] = dict()
     er_hnames = []
     for hyp_file in options.hyp_files:
         hname = hyp_file.name
@@ -237,7 +231,16 @@ def main(args=None):
             return 1
         hyps = [" ".join(hyp_dict[x]) for x in keys]
         if evaluate_with_conf_int:
-            samples = np.asarray([jiwer.process_words(*rh) for rh in zip(refs, hyps)])
+            samples = (jiwer.process_words(*rh) for rh in zip(refs, hyps))
+            samples = np.asarray(
+                [
+                    (
+                        s.insertions + s.deletions + s.substitutions,
+                        s.substitutions + s.hits + s.deletions,
+                    )
+                    for s in samples
+                ]
+            )
             er, ci = evaluate_with_conf_int(
                 samples,
                 _bootstrap_metric,
